@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="355" viewBox="0 0 18 355">
+  <defs>
+    <linearGradient id="linear-gradient" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="1" stop-color="#00b2a9"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="0.5" x2="0.5" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#00b2a9"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g id="scrollIcon" transform="translate(53)">
+    <g id="Raggruppa_1" data-name="Raggruppa 1">
+      <path id="Tracciato_1" data-name="Tracciato 1" d="M-45.5,0h1V174h-1Z" fill="url(#linear-gradient)"/>
+      <path id="Tracciato_2" data-name="Tracciato 2" d="M-45.5,283h1v72h-1Z" fill="url(#linear-gradient-2)"/>
+    </g>
+    <g id="Raggruppa_2" data-name="Raggruppa 2">
+      <path id="Tracciato_3" data-name="Tracciato 3" d="M-44,218.5h0a8.5,8.5,0,0,1,8.5,8.5v11a8.5,8.5,0,0,1-8.5,8.5h0a8.5,8.5,0,0,1-8.5-8.5V227A8.5,8.5,0,0,1-44,218.5Z" fill="none" stroke="#33cac0" stroke-width="1"/>
+      <path id="Tracciato_4" data-name="Tracciato 4" d="M-44,224h0a1,1,0,0,1,1,1v5a1,1,0,0,1-1,1h0a1,1,0,0,1-1-1v-5A1,1,0,0,1-44,224Z" fill="#33cac0"/>
+    </g>
+  </g>
+</svg>

@@ -20,6 +20,16 @@ async function main() {
   await greeter.deployed();
 
   console.log("Greeter deployed to:", greeter.address);
+
+  const NFTMarket = await ethers.getContractFactory("NFTMarket");
+  const nftMarket = await NFTMarket.deploy();
+  await nftMarket.deployed();
+  console.log("nftMarket deployed to:", nftMarket.address);
+
+  const NFT = await ethers.getContractFactory("NFT");
+  const nft = await NFT.deploy(nftMarket.address);
+  await nft.deployed();
+  console.log("nft deployed to:", nft.address);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

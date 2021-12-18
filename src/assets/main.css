@@ -1,0 +1,19 @@
+@import './base.css'; /* Sovrascrive le classi di tailwind (base) */
+
+@tailwind base;
+@tailwind components;
+
+/* @import './components.css'; */
+
+@tailwind utilities;
+
+h6 {
+  font-size: 16px;
+  line-height: 1.1;
+  font-weight: bold;
+  color: #1d1e1e;
+}
+
+body, html {
+  overflow-x: hidden;
+}
