@@ -1,6 +1,8 @@
 /* hardhat.config.js */
-require("@nomiclabs/hardhat-waffle")
+import "@nomiclabs/hardhat-waffle";
 import "@nomiclabs/hardhat-ethers";
+// import "hardhat-deploy-ethers";
+
 const fs = require('fs')
 const privateKey = fs.readFileSync(".secret").toString().trim() || "K0RVajGlPkuAIOsHYXT6EgZeSFQUnL9N"
 console.log("Private key", privateKey);

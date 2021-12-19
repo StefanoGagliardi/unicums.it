@@ -2,6 +2,11 @@
 
 **Authos:** [stefano.gagliardi@sitisrl.it](mailto:stefano.gagliardi@sitisrl.it)  
 **Version:** 0.1 Alpha
+**Inspired:** [dev.to article](https://dev.to/dabit3/building-scalable-full-stack-apps-on-ethereum-with-polygon-2cfb)
+
+## Next Step
+
+1. The Graph - Graphql query sdk for Blockchain data
 
 ### Run ecosystem in localhost localnet
 
@@ -17,3 +22,30 @@
 
 **Run app**
 `npm run dev`
+
+## Start script
+
+List of all avaible scripts:
+
+**Application scripts:**
+
+1. `npm run build` - Build NextJs app
+2. `npm run dev` - Run NextJs app in development mode
+3. `npm run test` - Run test
+4. `npm run start` - Run NextJs build app
+5. `npm run setup:local:testnet` - Setup enviroment for local development on local testnet
+
+**Blockchain scripts:**
+
+1. `npx hardhat node` - Start Polygon local blockchain
+2. `npx hardhat run scripts/deploy.ts --network` - Deploy smart contract on current active network
+   NB: Questo script può essere lanciato da node e non da "hardhat" come indicato nella loro doc [Standalone scripts](https://hardhat.org/guides/scripts.html#standalone-scripts-using-hardhat-as-a-library)
+
+   1. Installare npm install --save-dev @nomiclabs/hardhat-ethers@npm:hardhat-deploy-ethers ethers
+   2. Installare npm install --save-dev hardhat-deploy-ethers ethers3
+   3. 
+
+**setup:local:testnet:**
+
+**For all definitions see 'scripts/types.d.ts'**
+This script invoke file `./scripts/setup.ts` with argument "--local", "--development" and "localnet", beacause same file will be used for production setup.
