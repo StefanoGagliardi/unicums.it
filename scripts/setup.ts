@@ -1,5 +1,6 @@
 /**
  * Setup Blockchain for several enviroments: local, test, production
+ *
  * @author Stefano Gagliardi <stefano.gagliardi@sitisrl.it>
  * @since 19/12/2021
  * @version 0.1.0 - Alpha
@@ -22,7 +23,8 @@ import { spawn, execSync } from "child_process";
 import EventEmitter from "events";
 
 // Class for deploy smart contract
-import DeploySmartContract from './deploy';
+import DeploySmartContract from "./deploy";
+import { isLocalTestnet } from "./helpers";
 
 // Define consts
 const TESTNET_LOCAL_PORT: number = 8545;
@@ -30,7 +32,7 @@ const TESTNET_LOCAL_PORT: number = 8545;
 /**
  * Env variables
  */
-let args: SetupArgs = {
+const args: SetupArgs = {
   nodePath: "",
   filePath: "",
   hostEnv: "local",
@@ -82,7 +84,6 @@ const blockchainEvent = new BlockchainEvent();
  * Actions are handled with EventEmitter
  */
 class LocalNetwork implements LocalNetworkInterface {
-
   public deployClass: DeploySmartContract;
 
   public __construct() {
@@ -138,33 +139,43 @@ class LocalNetwork implements LocalNetworkInterface {
   }
 
   // Deplout SmartContract on TestNet
-  public deployMarketplaceContract() {
+  public async deployMarketplaceContract() {
+    const contractMarketAddress = await this.deployClass.deployContract("NFT");
+    console.log("contractMarketAddress: ", contractMarketAddress);
+  }
+
+  // Reset Hardhat: 1. Cache 2. Compile contract and generate tyoes
+  public async resetHardhat() {
     
   }
 }
-
 // Initialize LocalNetwork class
 const localNet = new LocalNetwork();
 
 /**
  * Start local Polygon node
  */
-if (
-  args.hostEnv === "local" &&
-  (args.appEnv === "development" || args.appEnv === "test") &&
-  args.chainEnv === "testnet"
-) {
+if (isLocalTestnet(args)) {
   console.log("Create class BlockchainEvent & LocalNetwork");
 
-  // Catch EventEmitter new event
-  blockchainEvent.on("nodeIsReady", () => {
-    console.log("==================== nodeIsReady for contract deploy ====================");
-    localNet.deployMarketplaceContract();
-  });
+  // Register event listeners
+  registerEventListeners();
+
+  // Clean hardhat cache and build compile ontracts
+  localNet.resetHardhat();
 
   const isKilled = localNet.killActiveNetwork(TESTNET_LOCAL_PORT);
-  console.log("isKilled: ", isKilled);
   if (isKilled) {
     localNet.startPolygoNode();
   }
+}
+
+/**
+ * Regisster listeners for emitted event of class Blokchain event
+ */
+async function registerEventListeners() {
+  // Catch EventEmitter new event
+  blockchainEvent.on("nodeIsReady", () => {
+    localNet.deployMarketplaceContract();
+  });
 }

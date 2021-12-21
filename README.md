@@ -43,9 +43,37 @@ List of all avaible scripts:
 
    1. Installare npm install --save-dev @nomiclabs/hardhat-ethers@npm:hardhat-deploy-ethers ethers
    2. Installare npm install --save-dev hardhat-deploy-ethers ethers3
-   3. 
+   3.
 
 **setup:local:testnet:**
 
 **For all definitions see 'scripts/types.d.ts'**
 This script invoke file `./scripts/setup.ts` with argument "--local", "--development" and "localnet", beacause same file will be used for production setup.
+
+## Static Type Binding
+
+Vedere ROAM
+https://github.com/dethcrypto/TypeChain/tree/master/packages/hardhat
+
+1. `npm install --save-dev typechain @typechain/hardhat @typechain/ethers-v5 --force`
+   Sono dovuto andare di --force per problemi di dipendneze di alcuni tipi
+
+2. Creare un fle tsconfig dedicato
+   Now typings should be automatically generated each time contract recompilation happens.
+
+3. `npx hardhat clean`- Clean cache
+
+4. Add plugin to Hardhat configuration:
+
+```typescript
+module.exports = {
+  typechain: {
+    outDir: "./typechain-types",
+    target: "ethers-v5",
+    alwaysGenerateOverloads: false, // should overloads with full signatures like deposit(uint256) be generated always, even if there are no overloads?
+    externalArtifacts: ["externalArtifacts/*.json"], // optional array of glob patterns with external artifacts to process (for example external libs from node_modules)
+  },
+};
+```
+
+5. Compile contract and generate Typescript types: `npx hardhat compile` inside previous declared folder "typechain-types"

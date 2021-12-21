@@ -7,7 +7,8 @@
 // Types
 import { HardhatEthersHelpers } from "@nomiclabs/hardhat-ethers/dist/src/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeploySmartContractInterface } from "./types";
+import { DeployedContracts, DeploySmartContractInterface } from "./types";
+import { NFTMarket__factory } from './../typechain-types';
 
 // LIbrayr
 import type { ethers } from "ethers";
@@ -58,5 +59,45 @@ main().catch((error) => {
 /**
  * Class for Deploy contract on net and save address to configuration files
  */
-class DeploySmartContract implements DeploySmartContractInterface {}
+class DeploySmartContract implements DeploySmartContractInterface {
+  public deployedContracts: DeployedContracts[] = [];
+
+  /**
+   * Class constructor
+   */
+  public __construct() {
+    console.log("Create class: DeploySmartContract");
+    this.compileContracts();
+  }
+
+  /**
+   * Compile smart contract with Hardhat
+   */
+  public async compileContracts() {
+    await wrapHre.run("compile");
+  }
+
+  /**
+   * Deploy smart contract from name
+   */
+  public async deployContract(contractName: string): Promise<boolean> {
+    
+    // Get contract factory
+    // NB: His Cotnract type are generated from command:npx hardhat compile
+    const NFTMarket: NFTMarket__factory = await wrapHre.ethers.getContractFactory("NFTMarket");
+    
+    const nftMarket = await NFTMarket.deploy();
+    await nftMarket.deployed();
+    console.log("nftMarket deployed to:", nftMarket.address);
+    return true;
+  }
+
+  /**
+   * Get successfully deploy contract
+   */
+  public getDeployedContracts(): DeployedContracts[] {
+    return this.deployedContracts;
+  }
+}
+
 export default DeploySmartContract;

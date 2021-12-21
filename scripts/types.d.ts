@@ -54,5 +54,10 @@ export interface BlockchainEventInterface extends EventEmitter {
  * Interface for class SmartConract Deploy
  */
 export interface DeploySmartContractInterface {
-
+  deployContract(contractName: string): Promise<boolean>;
+  getDeployedContracts(): DeployedContracts[];
+}
+export type DeployedContracts = {
+  name: string,
+  address: string
 }
