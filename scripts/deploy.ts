@@ -55,5 +55,8 @@ main().catch((error) => {
   process.exitCode = 1;
 });
 
+/**
+ * Class for Deploy contract on net and save address to configuration files
+ */
 class DeploySmartContract implements DeploySmartContractInterface {}
 export default DeploySmartContract;
