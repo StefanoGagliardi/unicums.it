@@ -21,6 +21,9 @@ import { spawn, execSync } from "child_process";
 // Event Emitter
 import EventEmitter from "events";
 
+// Class for deploy smart contract
+import DeploySmartContract from './deploy';
+
 // Define consts
 const TESTNET_LOCAL_PORT: number = 8545;
 
@@ -79,6 +82,13 @@ const blockchainEvent = new BlockchainEvent();
  * Actions are handled with EventEmitter
  */
 class LocalNetwork implements LocalNetworkInterface {
+
+  public deployClass: DeploySmartContract;
+
+  public __construct() {
+    this.deployClass = new DeploySmartContract();
+  }
+
   // Start node on new thread
   public startPolygoNode() {
     // NB: use Span instead of exec because the first one use EventEmitter for long process output

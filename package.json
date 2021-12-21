@@ -6,7 +6,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "setup:local:testnet": "npx ts-node scripts/setup.ts local development testnet"
+    "setup:local:testnet": "npx ts-node scripts/setup.ts local development testnet",
+    "buildFront": "tsc -p tsconfig.setup.json"
   },
   "dependencies": {
     "@nomiclabs/hardhat-waffle": "^2.0.1",

@@ -56,3 +56,4 @@ main().catch((error) => {
 });
 
 class DeploySmartContract implements DeploySmartContractInterface {}
+export default DeploySmartContract;
