@@ -38,7 +38,7 @@ List of all avaible scripts:
 **Blockchain scripts:**
 
 1. `npx hardhat node` - Start Polygon local blockchain
-2. `npx hardhat run scripts/deploy.ts --network` - Deploy smart contract on current active network
+2. `npx hardhat run scripts/deploy.ts --network localhost` - Deploy smart contract on current active network
    NB: Questo script può essere lanciato da node e non da "hardhat" come indicato nella loro doc [Standalone scripts](https://hardhat.org/guides/scripts.html#standalone-scripts-using-hardhat-as-a-library)
 
    1. Installare npm install --save-dev @nomiclabs/hardhat-ethers@npm:hardhat-deploy-ethers ethers

@@ -31,7 +31,7 @@ import { isLocalTestnet } from "./helpers";
 
 // import third parts\
 import fs from "fs";
-import os from 'os';
+import os from "os";
 
 // Define consts
 const TESTNET_LOCAL_PORT: number = 8545;
@@ -183,6 +183,42 @@ class LocalNetwork implements LocalNetworkInterface {
     }
   }
 
+  public async deploytContractsListV2() {
+    const child = spawn(
+      "npx hardhat run scripts/deploy-v1.ts --network localhost",
+      { shell: true }
+    );
+
+    child.stdout.setEncoding("utf8");
+    child.stdout.on("data", function (data) {
+      //Here is where the output goes
+      console.log("stdout: " + typeof data, "  :", data);
+      // data = data.toString();
+      // console.log("data.toString(): ", data.toString());
+
+      // Emit event for deploy contract
+      const regex = /(Account #6:)/;
+      if (regex.test(data)) {
+        console.log(
+          "=============== EMIT EVENT AFTER 6 GENERATED WALLET =========================="
+        );
+        blockchainEvent.nodeIsReady();
+      }
+    });
+
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", function (data) {
+      //Here is where the error output goes
+      console.log("stderr: " + data);
+      data = data.toString();
+    });
+
+    child.on("close", function (code) {
+      //Here you can get the exit code of the script
+      console.log("closing code: " + code);
+    });
+  }
+
   // Reset Hardhat: 1. Cache 2. Compile contract and generate types
 
   /**
@@ -241,7 +277,8 @@ class LocalNetwork implements LocalNetworkInterface {
 
     deployed.map((value: DeployedContractItem) => {
       const contractName = value.name.toLowerCase() + "address";
-      fileContent += ` export const ${contractName} = "${value.address}"; `  + os.EOL;
+      fileContent +=
+        ` export const ${contractName} = "${value.address}"; ` + os.EOL;
       return value;
     });
 
@@ -281,7 +318,8 @@ const main = async () => {
   async function registerEventListeners() {
     // Catch EventEmitter new event
     blockchainEvent.on("nodeIsReady", async () => {
-      await localNet.deploytContractsList(contractsList);
+      // await localNet.deploytContractsList(contractsList);
+      await localNet.deploytContractsListV2();
       const keysFileContent = localNet.genenrateAddressFile();
 
       fs.writeFile("config.js", keysFileContent as string, function (err) {
