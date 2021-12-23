@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-
+import { ContractName } from "./setup";
 /**
  * Argument console for setup.ts
  */
@@ -41,8 +41,14 @@ export type ChainEnv = "localnet" | "testnet" | "mainnet";
 
 /**
  * LocalNetwork class
+ * NB: Abstract is required for static method
  */
-export interface LocalNetworkInterface {
+export abstract class LocalNetworkInterface implements LNI {
+  /**
+   * Create class with async/await constructor via static method that return class
+   */
+  static async createInstanceAsync(): Promise<typeof LocalNetworkInterface>;
+
   startPolygoNode(): void;
   killActiveNetwork(port: number): boolean;
   deploytContractsList(contractsList: ContractsListItem[]): void;
@@ -58,8 +64,14 @@ export interface BlockchainEventInterface extends EventEmitter {
 /**
  * Interface for class SmartConract Deploy
  */
-export interface DeploySmartContractInterface {
-  deployContract(contractName: string): Promise<boolean>;
+export abstract class DeploySmartContractInterface {
+  public deployedContracts: DeployedContractItem[] = [];
+
+  static async createInstanceAsync(): Promise<
+    typeof DeploySmartContractInterface
+  >;
+
+  deployContract(contractsName: ContractsListItem[]): Promise<boolean>;
   getDeployedContracts(): DeployedContracts[];
 }
 
@@ -76,7 +88,7 @@ export type DeployedContractItem = {
  */
 export type ContractsListItem = {
   name: string;
-  contractName: string;
+  contractName: ContractName;
 };
 
 /**

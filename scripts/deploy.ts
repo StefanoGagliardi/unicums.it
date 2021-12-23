@@ -7,8 +7,16 @@
 // Types
 import { HardhatEthersHelpers } from "@nomiclabs/hardhat-ethers/dist/src/types";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeployedContractItem, DeploySmartContractInterface } from "./types";
-import { NFTMarket__factory } from "./../typechain-types";
+import {
+  ContractsListItem,
+  DeployedContractItem,
+  DeploySmartContractInterface,
+} from "./types";
+import {
+  Greeter__factory,
+  NFTMarket__factory,
+  NFT__factory,
+} from "./../typechain-types";
 import { ContractName } from "./setup";
 
 // LIbrayr
@@ -44,10 +52,10 @@ const wrapHre = hre as HardhatRuntimeEnvironment & { ethers: any } & {
 //   await nftMarket.deployed();
 //   console.log("nftMarket deployed to:", nftMarket.address);
 
-//   const NFT = await wrapHre.ethers.getContractFactory("NFT");
-//   const nft = await NFT.deploy(nftMarket.address);
-//   await nft.deployed();
-//   console.log("nft deployed to:", nft.address);
+// const NFT = await wrapHre.ethers.getContractFactory("NFT");
+// const nft = await NFT.deploy(nftMarket.address);
+// await nft.deployed();
+// console.log("nft deployed to:", nft.address);
 // }
 
 // // We recommend this pattern to be able to use async/await everywhere
@@ -71,7 +79,7 @@ class DeploySmartContract implements DeploySmartContractInterface {
     console.log("Create class: DeploySmartContract");
   }
 
-  public static CreateInstanceAsync = async () => {
+  public static createInstanceAsync = async () => {
     console.log("Create class DeploySmartContract FROM STATIC FUNCTION");
     const me = new DeploySmartContract();
     await me.compileContracts();
@@ -89,23 +97,80 @@ class DeploySmartContract implements DeploySmartContractInterface {
    * Deploy smart contract from name
    * This function is cycled n times from setup.ts
    */
-  public async deployContract(contractName: ContractName): Promise<boolean> {
+  public async deployContract(
+    contractsName: ContractsListItem[]
+  ): Promise<boolean> {
+    const deployedContractsInternal: DeployedContractItem[] = [];
+    console.log("DEPLOY DEBUG: contractsName: ", contractsName);
     try {
-      // Get contract factory
-      const NFTMarket: NFTMarket__factory =
-        await wrapHre.ethers.getContractFactory(contractName);
+      for (let i = 0; i < contractsName.length; i++) {
+        const value: ContractsListItem = contractsName[i];
 
-      const nftMarket = await NFTMarket.deploy();
-      await nftMarket.deployed();
+        console.log(
+          "deployedContractsInternal: ",
+          deployedContractsInternal,
+          " I:",
+          i
+        );
+        console.log("deployedContractsInternal: ", value);
+        switch (value.contractName) {
+          case "NFTMarket" as ContractName:
+            console.log(
+              "===== SWITCH value.contractName ========",
+              value.contractName
+            );
+            // Get contract factory
+            const NFTMarket: NFTMarket__factory =
+              await wrapHre.ethers.getContractFactory(value.contractName);
 
-      console.log("nftMarket: ", nftMarket);
-      console.log("nftMarket deployed to:", nftMarket.address);
+            const nftMarket = await NFTMarket.deploy();
+            await nftMarket.deployed();
+            console.log("nftMarket deployed to:", nftMarket.address);
+            deployedContractsInternal.push({
+              name: value.contractName,
+              address: nftMarket.address,
+            });
+            break;
+          case "NFT" as ContractName:
+            const NFT: NFT__factory = await wrapHre.ethers.getContractFactory(
+              "NFT"
+            );
+            // TODO Render this.deployedContracts dinamico rispetto al primo contratto
+            const nft = await NFT.deploy(deployedContractsInternal[0].address);
+            await nft.deployed();
+            console.log("nft deployed to:", nft.address);
 
-      // Push deployed contract
-      this.deployedContracts.push({
-        name: contractName,
-        address: nftMarket.address,
-      });
+            // Push deployed contract
+            deployedContractsInternal.push({
+              name: value.contractName,
+              address: nft.address,
+            });
+            break;
+          case "Greeter" as ContractName:
+            // Get contract factory
+            const Greeter: Greeter__factory =
+              await wrapHre.ethers.getContractFactory(value.contractName);
+
+            const GreeterContract = await Greeter.deploy("Hello, Hardhat!");
+            await GreeterContract.deployed();
+
+            console.log(
+              "GreeterContract deployed to:",
+              GreeterContract.address
+            );
+
+            // Push deployed contract
+            deployedContractsInternal.push({
+              name: value.contractName,
+              address: GreeterContract.address,
+            });
+            break;
+        }
+      }
+
+      console.log("deployedContractsInternal: ", deployedContractsInternal);
+      this.deployedContracts.push(...deployedContractsInternal);
+
       return true;
     } catch (e) {
       // Print error and kill console with exit code

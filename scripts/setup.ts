@@ -29,6 +29,10 @@ import EventEmitter from "events";
 import DeploySmartContract from "./deploy";
 import { isLocalTestnet } from "./helpers";
 
+// import third parts\
+import fs from "fs";
+import os from 'os';
+
 // Define consts
 const TESTNET_LOCAL_PORT: number = 8545;
 
@@ -105,23 +109,17 @@ const blockchainEvent = new BlockchainEvent();
 class LocalNetwork implements LocalNetworkInterface {
   public deployClass: any = null; // DeploySmartContractInterface
 
-  public __construct() {
-    console.log("Create Class - LocalNetwork");
-    console.log(
-      "new DeploySmartContract(); ",
-      DeploySmartContract.CreateInstanceAsync()
-    );
-  }
+  public __construct() {}
 
-  public static CreateInstanceAsync = async () => {
+  public static async createInstanceAsync() {
     console.log("Create class DeploySmartContract FROM STATIC FUNCTION");
     const me = new LocalNetwork();
     await me.initializeDeployClass();
     return me;
-  };
+  }
 
   public async initializeDeployClass() {
-    this.deployClass = await DeploySmartContract.CreateInstanceAsync();
+    this.deployClass = await DeploySmartContract.createInstanceAsync();
   }
 
   // Start node on new thread
@@ -173,17 +171,20 @@ class LocalNetwork implements LocalNetworkInterface {
   }
 
   // Deplout SmartContract on TestNet
-  public async deploytContractsList(contractList: ContractsListItem[]) {
+  public async deploytContractsList(
+    contractList: ContractsListItem[]
+  ): Promise<void> {
     console.log("this.deployClass: ", this.deployClass);
-    for (let i = 0; i < contractList.length; i++) {
-      const contractMarketAddress = await this.deployClass.deployContract(
-        "NFTMarket"
-      );
-      console.log("contractMarketAddress: ", contractMarketAddress);
+    try {
+      await this.deployClass.deployContract(contractList);
+    } catch (e: any) {
+      console.error(e);
+      process.exitCode = 1;
     }
   }
 
-  // Reset Hardhat: 1. Cache 2. Compile contract and generate tyoes
+  // Reset Hardhat: 1. Cache 2. Compile contract and generate types
+
   /**
    * Reset Polygon cache, compile conrtact and generate types
    * NB: Reset cache remove types - types path is defined in hardhat.config.ts
@@ -223,14 +224,38 @@ class LocalNetwork implements LocalNetworkInterface {
   public getDeployedContracts(): DeployedContractItem[] {
     return this.deployClass.getDeployedContracts();
   }
+
+  /**
+   * Generate javascript file content with contract address
+   */
+  public genenrateAddressFile(): string | Error {
+    const deployed = this.getDeployedContracts();
+    console.log("======== BEFORE WRITE FILE deployed: =====", deployed);
+    if (!deployed.length) {
+      throw new Error(
+        "Attenzione! Nessun contract Address trovato nell'array prima di scrivere su file .js"
+      );
+    }
+
+    let fileContent = ``;
+
+    deployed.map((value: DeployedContractItem) => {
+      const contractName = value.name.toLowerCase() + "address";
+      fileContent += ` export const ${contractName} = "${value.address}"; `  + os.EOL;
+      return value;
+    });
+
+    return fileContent;
+  }
 }
 
 /**
  * Start local Polygon node
+ * Rewwap all in async functions for async class insdtnce creation
  */
 const main = async () => {
   // Initialize LocalNetwork class
-  const localNet = await LocalNetwork.CreateInstanceAsync();
+  const localNet = await LocalNetwork.createInstanceAsync();
 
   if (isLocalTestnet(args)) {
     console.log("Create class BlockchainEvent & LocalNetwork");
@@ -257,11 +282,23 @@ const main = async () => {
     // Catch EventEmitter new event
     blockchainEvent.on("nodeIsReady", async () => {
       await localNet.deploytContractsList(contractsList);
-      const deployed = localNet.getDeployedContracts();
-      console.log("Deployed: ", deployed);
+      const keysFileContent = localNet.genenrateAddressFile();
+
+      fs.writeFile("config.js", keysFileContent as string, function (err) {
+        if (err) return console.log(err);
+        console.log("Hello World > helloworld.txt");
+      });
     });
     1;
   }
 };
 
+/**
+ * Main funciton entry point
+ */
 main();
+
+/**
+ * Initialize all class for start blokchain local setupArgs
+ */
+const main2 = async () => {};
