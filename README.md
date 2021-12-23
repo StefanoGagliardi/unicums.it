@@ -77,3 +77,17 @@ module.exports = {
 ```
 
 5. Compile contract and generate Typescript types: `npx hardhat compile` inside previous declared folder "typechain-types"
+
+### NPM RUN SETUP:LOCAL:TESTNET
+
+This script set Local Polygn network, deploy contracts, set keys. Then we can start our React platform.
+This script have mandatory this command: `npm run setup:local:testnet local development testnet ?true"
+
+**Mandatory:**
+
+1. Network type: `export type ChainEnv = "localnet" | "testnet" | "mainnet";`
+2. Env host: `export type HostEnv = "local" | "server";`
+3. Node env: `export type AppEnv = "test" | "development" | "production";`
+
+**Optional:**  
+4. Reset Hardat: true o false

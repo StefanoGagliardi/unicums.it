@@ -11,6 +11,9 @@ import {
   AppEnv,
   BlockchainEventInterface,
   ChainEnv,
+  ContractsListItem,
+  DeployedContractItem,
+  DeploySmartContractInterface,
   HostEnv,
   LocalNetworkInterface,
   SetupArgs,
@@ -29,6 +32,17 @@ import { isLocalTestnet } from "./helpers";
 // Define consts
 const TESTNET_LOCAL_PORT: number = 8545;
 
+// Contract to deploy then store with address
+export type ContractName = "NFTMarket" | "NFT" | "Greeter";
+export const contractsList: ContractsListItem[] = [
+  { name: "NFTMarket", contractName: "NFTMarket" },
+  { name: "NFT", contractName: "NFT" },
+  { name: "Greeter", contractName: "Greeter" },
+];
+
+// Smart contracts saved with deployed address
+const ContractsDeployed: DeployedContractItem[] = [];
+
 /**
  * Env variables
  */
@@ -38,6 +52,7 @@ const args: SetupArgs = {
   hostEnv: "local",
   appEnv: "development",
   chainEnv: "localnet",
+  resetHardhat: false,
 };
 
 /**
@@ -60,6 +75,9 @@ process.argv.forEach(function (val, index) {
     case 4:
       args.chainEnv = val as ChainEnv;
       break;
+    case 5:
+      args.resetHardhat = val === "true" ? true : false;
+      break;
   }
 });
 
@@ -70,6 +88,7 @@ process.argv.forEach(function (val, index) {
 class BlockchainEvent extends EventEmitter implements BlockchainEventInterface {
   constructor() {
     super();
+    console.log("Initialize Class - BlockchainEvent that extends EventEmitter");
   }
 
   nodeIsReady() {
@@ -84,10 +103,25 @@ const blockchainEvent = new BlockchainEvent();
  * Actions are handled with EventEmitter
  */
 class LocalNetwork implements LocalNetworkInterface {
-  public deployClass: DeploySmartContract;
+  public deployClass: any = null; // DeploySmartContractInterface
 
   public __construct() {
-    this.deployClass = new DeploySmartContract();
+    console.log("Create Class - LocalNetwork");
+    console.log(
+      "new DeploySmartContract(); ",
+      DeploySmartContract.CreateInstanceAsync()
+    );
+  }
+
+  public static CreateInstanceAsync = async () => {
+    console.log("Create class DeploySmartContract FROM STATIC FUNCTION");
+    const me = new LocalNetwork();
+    await me.initializeDeployClass();
+    return me;
+  };
+
+  public async initializeDeployClass() {
+    this.deployClass = await DeploySmartContract.CreateInstanceAsync();
   }
 
   // Start node on new thread
@@ -139,43 +173,95 @@ class LocalNetwork implements LocalNetworkInterface {
   }
 
   // Deplout SmartContract on TestNet
-  public async deployMarketplaceContract() {
-    const contractMarketAddress = await this.deployClass.deployContract("NFT");
-    console.log("contractMarketAddress: ", contractMarketAddress);
+  public async deploytContractsList(contractList: ContractsListItem[]) {
+    console.log("this.deployClass: ", this.deployClass);
+    for (let i = 0; i < contractList.length; i++) {
+      const contractMarketAddress = await this.deployClass.deployContract(
+        "NFTMarket"
+      );
+      console.log("contractMarketAddress: ", contractMarketAddress);
+    }
   }
 
   // Reset Hardhat: 1. Cache 2. Compile contract and generate tyoes
-  public async resetHardhat() {
-    
+  /**
+   * Reset Polygon cache, compile conrtact and generate types
+   * NB: Reset cache remove types - types path is defined in hardhat.config.ts
+   * 1. Reset Cache `npx hardhat clean`
+   */
+  public async resetAndCompileHardhat() {
+    // NB: use Span instead of exec because the first one use EventEmitter for long process output
+    //  "exec" print all output at the end
+    const child = spawn("npx hardhat clean && npx hardhat compile", {
+      shell: true,
+    });
+
+    child.stdout.setEncoding("utf8");
+    child.stdout.on("data", function (data) {
+      //Here is where the output goes
+      console.log("stdout: " + typeof data, "  :", data);
+      // data = data.toString();
+      console.log("data.toString(): ", data.toString());
+    });
+
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", function (data) {
+      //Here is where the error output goes
+      console.log("stderr: " + data);
+      data = data.toString();
+    });
+
+    child.on("close", function (code) {
+      //Here you can get the exit code of the script
+      console.log("closing code: " + code);
+    });
+  }
+
+  /**
+   * Retrive deployted contracts list
+   */
+  public getDeployedContracts(): DeployedContractItem[] {
+    return this.deployClass.getDeployedContracts();
   }
 }
-// Initialize LocalNetwork class
-const localNet = new LocalNetwork();
 
 /**
  * Start local Polygon node
  */
-if (isLocalTestnet(args)) {
-  console.log("Create class BlockchainEvent & LocalNetwork");
+const main = async () => {
+  // Initialize LocalNetwork class
+  const localNet = await LocalNetwork.CreateInstanceAsync();
 
-  // Register event listeners
-  registerEventListeners();
+  if (isLocalTestnet(args)) {
+    console.log("Create class BlockchainEvent & LocalNetwork");
 
-  // Clean hardhat cache and build compile ontracts
-  localNet.resetHardhat();
+    // Register event listeners
+    console.log("INitalize regeristerEventListener()");
+    registerEventListeners();
 
-  const isKilled = localNet.killActiveNetwork(TESTNET_LOCAL_PORT);
-  if (isKilled) {
-    localNet.startPolygoNode();
+    // Clean hardhat cache and build compile ontracts
+    if (args.resetHardhat) {
+      localNet.resetAndCompileHardhat();
+    }
+
+    const isKilled = localNet.killActiveNetwork(TESTNET_LOCAL_PORT);
+    if (isKilled) {
+      localNet.startPolygoNode();
+    }
   }
-}
 
-/**
- * Regisster listeners for emitted event of class Blokchain event
- */
-async function registerEventListeners() {
-  // Catch EventEmitter new event
-  blockchainEvent.on("nodeIsReady", () => {
-    localNet.deployMarketplaceContract();
-  });
-}
+  /**
+   * Regisster listeners for emitted event of class Blokchain event
+   */
+  async function registerEventListeners() {
+    // Catch EventEmitter new event
+    blockchainEvent.on("nodeIsReady", async () => {
+      await localNet.deploytContractsList(contractsList);
+      const deployed = localNet.getDeployedContracts();
+      console.log("Deployed: ", deployed);
+    });
+    1;
+  }
+};
+
+main();

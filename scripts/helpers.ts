@@ -6,7 +6,7 @@
  */
 
 // Import types
-import { SetupArgs } from "./types";
+import { SetupArgs, ThreadManagerInterface } from "./types";
 
 // Validate command line args for different setup
 export const isLocalTestnet = (args: SetupArgs): boolean => {
@@ -20,3 +20,5 @@ export const isLocalTestnet = (args: SetupArgs): boolean => {
 
   return false;
 };
+
+class ThreadManager implements ThreadManagerInterface {}
